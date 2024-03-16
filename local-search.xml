@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  
+  
+  
+  <entry>
+    <title>从零开始的C++游戏旅程</title>
+    <link href="/purewhite/post/1e75847963e7/"/>
+    <url>/purewhite/post/1e75847963e7/</url>
+    
+    <content type="html"><![CDATA[<h1 id="0x0-序章"><a href="#0x0-序章" class="headerlink" title="0x0|序章"></a>0x0|序章</h1><p><a href="https://www.bilibili.com/video/BV1iQ4y1s7Qj/"><a href="https://www.bilibili.com/video/BV1iQ4y1s7Qj/">https://www.bilibili.com/video/BV1iQ4y1s7Qj/</a></a></p><h2 id="C-C-的语法基础"><a href="#C-C-的语法基础" class="headerlink" title="C&#x2F;C++的语法基础"></a>C&#x2F;C++的语法基础</h2><p>视频：哔哩哔哩、中国大学慕课</p><p>书籍：《C Primer Plus》从零开始了解C的方方面面，《C++ Primer》C的基础上快速转型C++、但学习曲线陡峭，接近工具书，《C++ Primer Plus》直接开始</p><h2 id="开发环境"><a href="#开发环境" class="headerlink" title="开发环境"></a>开发环境</h2><p>Visual Studio 2022 + EasyX大暑版 + 空项目</p><h2 id="0：跟随鼠标移动的小球"><a href="#0：跟随鼠标移动的小球" class="headerlink" title="0：跟随鼠标移动的小球"></a>0：跟随鼠标移动的小球</h2><ol><li><p>使用<code>initgraph()</code>初始化窗口，为避免消失，使用循环卡住。<strong>常见的游戏都是在循环中不断读入输入，刷新画面。</strong></p></li><li><p>使用<code>solidcircle()</code>画圆，对鼠标事件消息使用<code>peekmessage()</code>处理，使得能跟随鼠标移动。使用循环从EasyX消息队列中不断拉取消息，匹配鼠标移动，获取消息中鼠标坐标赋给画圆函数。</p></li></ol><h2 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h2><ol><li><p>新的圆越来越多：每次绘图前清空设备。</p></li><li><p>圆不断闪烁：使用双缓存优化</p></li></ol><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-meta">#<span class="hljs-keyword">include</span><span class="hljs-string">&lt;graphics.h&gt;</span></span><br><span class="hljs-function"><span class="hljs-type">int</span> <span class="hljs-title">main</span><span class="hljs-params">()</span></span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-built_in">initgraph</span>(<span class="hljs-number">1280</span>, <span class="hljs-number">720</span>);<br>    <span class="hljs-type">int</span> x = <span class="hljs-number">300</span>, y = <span class="hljs-number">300</span>;<br>    <span class="hljs-built_in">BeginBatchDraw</span>();<br>    <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>)<br>    &#123;<br>        ExMessage msg;<br>        <span class="hljs-keyword">while</span> (<span class="hljs-built_in">peekmessage</span>(&amp;msg))<br>        &#123;<br>            <span class="hljs-keyword">if</span> (msg.message == WM_MOUSEMOVE)<br>            &#123;<br>                x = msg.x;<br>                y = msg.y;<br>            &#125;<br>        &#125;<br>        <span class="hljs-built_in">cleardevice</span>();<br>        <span class="hljs-built_in">solidcircle</span>(x, y, <span class="hljs-number">150</span>);<br>        <span class="hljs-built_in">FlushBatchDraw</span>();<br>    &#125;<br>    <span class="hljs-built_in">EndBatchDraw</span>();<br>&#125;<br></code></pre></td></tr></table></figure><h1 id="0x1：井字棋"><a href="#0x1：井字棋" class="headerlink" title="0x1：井字棋"></a>0x1：井字棋</h1><p><a href="https://www.bilibili.com/video/BV1ru4y1a7rL/"><a href="https://www.bilibili.com/video/BV1ru4y1a7rL/">https://www.bilibili.com/video/BV1ru4y1a7rL/</a></a></p><h2 id="基础知识"><a href="#基础知识" class="headerlink" title="基础知识"></a>基础知识</h2><p>坐标系：屏幕左上是原点，X轴正方向是屏幕右侧，Y轴正方向是屏幕向下。</p><h3 id="渲染缓冲区"><a href="#渲染缓冲区" class="headerlink" title="渲染缓冲区"></a>渲染缓冲区</h3><p>EasyX中先绘制的颜色会被后绘制的颜色覆盖，<code>cleardevice()</code>默认使用黑色填充画布。</p><ol><li><p>屏幕中图形如实心圆的绘制是逐渐的，在清屏时这一过程也就体现为闪烁。</p></li><li><p>调用<code>BeginBatchDraw()</code>后EasyX新建了一个画布（渲染缓冲区），默认不可见，新图形被绘制于此。</p></li><li><p>调用<code>FlushBatchDraw()</code>时，EasyX将窗口显示缓冲区于新建缓冲区交换，交换动作迅速因而避免闪烁。</p></li></ol><h2 id="游戏基本框架"><a href="#游戏基本框架" class="headerlink" title="游戏基本框架"></a>游戏基本框架</h2><p>使用“主循环”不断读取玩家操作，将操作翻译为数据处理逻辑，绘制画面。</p><p>游戏画面只依赖于当前数据（软工“解耦合”、数据驱动、渲染与逻辑分离）。</p><figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs c++"><span class="hljs-built_in">Initial</span>();<br><span class="hljs-keyword">while</span>(<span class="hljs-literal">true</span>)<br>&#123;<br>    <span class="hljs-built_in">ReadOperations</span>();<br>    <span class="hljs-built_in">ProcessData</span>();<br>    <span class="hljs-built_in">DrawGraph</span>();<br>&#125;<br><span class="hljs-built_in">ReleaseResource</span>();<br></code></pre></td></tr></table></figure><h2 id="1：井字棋制作"><a href="#1：井字棋制作" class="headerlink" title="1：井字棋制作"></a>1：井字棋制作</h2><ol><li>框架设计：</li></ol>]]></content>
+    
+    
+    <categories>
+      
+      <category>college</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>C/C++</tag>
+      
+      <tag>Game Programing</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>如何取得无线电执照</title>
+    <link href="/purewhite/post/8b21d8981ed1/"/>
+    <url>/purewhite/post/8b21d8981ed1/</url>
+    
+    <content type="html"><![CDATA[<p><a href="https://www.bilibili.com/video/BV1HG4y1j79t/"><a href="https://www.bilibili.com/video/BV1HG4y1j79t/">https://www.bilibili.com/video/BV1HG4y1j79t/</a></a></p><h1 id="概念区分"><a href="#概念区分" class="headerlink" title="概念区分"></a>概念区分</h1><p>业余无线电：使用无线电从事业余（“民用”）业务，提供给爱好者，不以盈利为目的，通过无线电进行自我训练、相互通信和技术研究的通信业务。</p><p>非业余电台：无线电是国家的战略资源，通常用于国防、导航、海事、航空航天等。</p><h1 id="证书考取"><a href="#证书考取" class="headerlink" title="证书考取"></a>证书考取</h1><p>中国无线电协会业余电台操作证书：需要考试。A是最低等级，操作在业余段的特高频UHF和甚高频VHF电台，功率不得超过25瓦。B可以额外操作业余段的高频HF电台（短波电台），最大发射功率100瓦。C类最大发射功率1000瓦。此外还有特殊电台。</p><p>通常各地微信公众号等可以报名考试，题库全国统一 ，A类300抽30通过25选择即可，一般有额外补考和考前培训（-￥100）。操作证书只能代表有操作业余无线电台的能力。</p><p>获得操作证书和业余无线电台后可以合法收听，但需要将设备上的核准码在协会“设台”，获得无线电台执照和“呼号”</p><h1 id="入门无线电"><a href="#入门无线电" class="headerlink" title="入门无线电"></a>入门无线电</h1><p>考取证书后并不算完全入门，最好再通过《业余无线电》等学习相关知识。</p><h1 id="现实意义"><a href="#现实意义" class="headerlink" title="现实意义"></a>现实意义</h1><p>个人来说：电波相逢，收集QSL（收听证明）卡。</p><p>国家层面：紧急情况的备用联络沟通，如地震中及时帮助了解灾区情况、报平安。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>college</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>哔哩哔哩</tag>
+      
+      <tag>HAM(radio amateur)</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>如何入门哲学学习</title>
+    <link href="/purewhite/post/b707812f38d0/"/>
+    <url>/purewhite/post/b707812f38d0/</url>
+    
+    <content type="html"><![CDATA[<p><a href="https://www.bilibili.com/video/BV1Qm4y1R7XY/"><a href="https://www.bilibili.com/video/BV1Qm4y1R7XY/">https://www.bilibili.com/video/BV1Qm4y1R7XY/</a></a><br>学习思路：由点到面，扎实发散。通过导论广泛了解各个领域，选择自己感兴趣的小做研究，再向外延伸，时机成熟再开发下一个研究目标。</p><p>学习要点：想要深入，先学外语（英语即可，至于欧陆哲学，“All materials  are translated into English.”不过如果能会其它外语（德语、俄语）更好不是吗，）</p><h1 id="学习步骤"><a href="#学习步骤" class="headerlink" title="学习步骤"></a>学习步骤</h1><p>导论：照着最顶级哲学院校的学习，参考“英语国家哲学院系排名”。<br><a href="https://www.philosophicalgourmet.com/overall-rankings/"><a href="https://www.philosophicalgourmet.com/overall-rankings/">https://www.philosophicalgourmet.com/overall-rankings/</a></a><br>学习顺序：建议导论、西方哲学史、逻辑学，自选喜欢。</p><p>学习方式：读书为主，公开课为辅。</p><p>书籍选择：参考名校推荐书目。在libgen上搜索相关领域，优先看最近的书，从导论的序言中找目标读者；从目录中找选材正关注核心的，多看几本相互比较；看导言和出版社。</p><p>深入学习：参考哲学百科选择感兴趣的领域，阅读指南类书籍中感兴趣的，再找联系。阅读经典书籍和论文，参考阅读推荐清单，读文集</p><h1 id="推荐资源"><a href="#推荐资源" class="headerlink" title="推荐资源"></a>推荐资源</h1><p>获取电子书和论文：zlib|libgen、sci-hub，也可以去借和买。</p><p>搜索论文：<a href="https://philpapers.org/">https://philpapers.org/</a>，未见刊论文：<a href="https://www.academia.edu/">https://www.academia.edu/</a></p><h2 id="哲学百科"><a href="#哲学百科" class="headerlink" title="哲学百科"></a>哲学百科</h2><p>斯坦福百科：大致代表英语学界对哪些话题有什么研究。<br><a href="https://plato.stanford.edu/contents.html"><a href="https://plato.stanford.edu/contents.html">https://plato.stanford.edu/contents.html</a></a><br>牛津参考文献：各领域的研究指南，包含阅读推荐，需要机构订阅或者libgen<br><a href="https://www.oxfordbibliographies.com/obo/page/philosophy">https://www.oxfordbibliographies.com/obo/page/philosophy</a><br>网络哲学百科：<a href="https://iep.utm.edu/">https://iep.utm.edu/</a></p><p>华文哲学百科：<a href="https://mephilosophy.ccu.edu.tw/explor_now">https://mephilosophy.ccu.edu.tw/explor_now</a></p><h1 id="哲学前沿"><a href="#哲学前沿" class="headerlink" title="哲学前沿"></a>哲学前沿</h1><p>英语学界的欧陆哲学：_Continental Philosophy Review_、_Cosmos and History_、_Philosophy Today_。欧陆哲学期刊排名：<a href="https://leiterreports.typepad.com/blog/2017/11/journals-that-publish-the-best-quality-articles-on-figures-in-the-post-kantian-continental-tradition.html">https://leiterreports.typepad.com/blog/2017/11/journals-that-publish-the-best-quality-articles-on-figures-in-the-post-kantian-continental-tradition.html</a>、另一个期刊排名：<a href="https://xingminghu.commons.gc.cuny.edu/etc/ranking_journals/">https://xingminghu.commons.gc.cuny.edu/etc/ranking_journals&#x2F;</a></p><p>欧陆哲学关注：<a href="https://www.bloomsbury.com/us/academic/philosophy/">https://www.bloomsbury.com/us/academic/philosophy/</a>、<a href="https://www.ed.ac.uk/ppls/philosophy">https://www.ed.ac.uk/ppls/philosophy</a></p><p>推荐入门：海德格尔《存在与时间》、黑格尔《精神现象学》</p><p>分析哲学文集：<em>Contemporary Database in Philosophy_、_Current Controversies in Philosophy</em></p><p>期刊：<em>Philosophy Compass</em></p><p>最后：看未发表的手稿、将要见刊、个人主页、学术会议</p><p>哲学写作</p><h1 id="入门读书"><a href="#入门读书" class="headerlink" title="入门读书"></a>入门读书</h1><p><a href="https://www.bilibili.com/video/BV1Tm4y1f74L"><a href="https://www.bilibili.com/video/BV1Tm4y1f74L">https://www.bilibili.com/video/BV1Tm4y1f74L</a></a></p><h2 id="开始读书"><a href="#开始读书" class="headerlink" title="开始读书"></a>开始读书</h2><ol><li><p>哲学导论、哲学史、哲学方法论</p></li><li><p>读特定流派、时期和人物的导论和相对好入门的原著</p></li><li><p>更难的哲学原著和论文以及研究性二手文献</p></li></ol><h2 id="书单"><a href="#书单" class="headerlink" title="书单"></a>书单</h2><h3 id="哲学导论"><a href="#哲学导论" class="headerlink" title="哲学导论"></a>哲学导论</h3><blockquote><p>有重合度，任选一本</p></blockquote><p>《你的第一本哲学书》：阐释哲学问题本身</p><p>《大问题：简明哲学导论》：哲学家对问题的回答</p><p>《哲学导论：综合原典教程》：哲学经典著作选段</p><p>《做哲学：88个哲学思想实验中的哲学导论》：具体实验</p><h3 id="哲学史"><a href="#哲学史" class="headerlink" title="哲学史"></a>哲学史</h3><blockquote><p>有重合度，任选一本</p></blockquote><p>《西方哲学史》梯利、《西方哲学史》斯通普夫、《西方哲学史：从古希腊到当下》希尔贝克、《哲学的历程：西方哲学历史导论》劳黑德。《哲学史演讲录》黑格尔、《西方哲学史》罗素两书有较多个人立场。《哲学史教程》文德尔班，结构化加深研究。</p><h3 id="哲学方法论"><a href="#哲学方法论" class="headerlink" title="哲学方法论"></a>哲学方法论</h3><blockquote><p>建议都读，重合度不高</p></blockquote><p><strong>《哲学是做出来的：初学者哲学技术指南》</strong>：哲学研究说明书</p><p>《哲学家的工具箱|简单的哲学、好用的哲学》：罗列知识点，简明语言解释的扫盲性质</p><p>《哲学泵和其它思考工具》丹尼特、《哲学是怎样炼成的》威廉姆森：大佬研究方法和心得</p><h3 id="领域的专门导论"><a href="#领域的专门导论" class="headerlink" title="领域的专门导论"></a>领域的专门导论</h3><blockquote><p>二十世纪后的哲学流派和人物，较为复杂分歧大</p></blockquote><p><strong>现象学</strong>：《现象学导论》、《现象学：一部历史和批评的导论》</p><p><strong>后现代主义</strong>哲学：《后现代理论：批判性的质疑》</p><p><strong>诠释学</strong>：《诠释学》</p><p><strong>存在主义</strong>：《非理性的人》</p><h4 id="分析哲学"><a href="#分析哲学" class="headerlink" title="分析哲学"></a>分析哲学</h4><blockquote><p>往往是弗雷格、罗素、维特斯坦根等人思想为代表的早期哲学史，《20世纪分析哲学史》。耶鲁大学公开课：哲学-死亡、哈佛大学公开课：公正-该如何做是好都是分析哲学家。分析哲学在上世纪七八十年代后开始愈发专门化和碎片化，分析哲学家开始成为几个领域的专家而非广泛涉猎，语言哲学是众多领域中的一员。以下任选其一即可。</p></blockquote><p>形而上学：《当代形而上学》路克斯、《形而上学》因瓦根</p><p>认识论：《人人都该懂的认识论》罗伯特·马丁、《知识论》费尔德曼</p><p>心灵哲学：《当代心灵哲学导论》约翰·海尔、《心灵导论》塞尔</p><p>语言哲学：《当代语言哲学导论》莱肯、《语言哲学：经典诠释》科林</p><p>伦理学：《牛津大学哲学通识课：道德哲学》乔纳森、《伦理学基础》拉斯</p><p>科学哲学：《牛津通识读本：科学哲学》萨米尔、《科学究竟是什么》查尔默斯</p><p>政治哲学：《当代政治哲学》金里卡</p><h3 id="人物的导论"><a href="#人物的导论" class="headerlink" title="人物的导论"></a>人物的导论</h3><p>《牛津通识读本》、《最伟大的思想家》</p><h3 id="哲学原著"><a href="#哲学原著" class="headerlink" title="哲学原著"></a>哲学原著</h3><p>参考《西方哲学原著导读》雷思温</p><h4 id="阅读策略"><a href="#阅读策略" class="headerlink" title="阅读策略"></a>阅读策略</h4><p>不建议初学者：古代哲学、中世纪哲学、康德之后的欧陆哲学（需要哲学史）、维特根斯坦。叔本华的《人生的智慧》是欧陆哲学里一个特例。</p><p>推荐初学者：近代哲学家著作（笛卡尔、贝克莱、洛克、休谟、莱布尼兹、斯宾诺莎、霍布斯、卢梭等），《人类理性研究》休谟。{《道德情操论》亚当斯密}</p><p>分析-语言：《语言、真理与逻辑》艾耶尔，分析-专门：《人的问题》内格尔，但优先近代哲学</p><p>必读：《理想国》柏拉图、《第一哲学沉思集》笛卡尔，（分析哲学）《命名与必然性》克里普克</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>philosophy</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>哔哩哔哩</tag>
+      
+      <tag>Western Philosophy</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>使用Aegisub制作字幕</title>
+    <link href="/purewhite/post/b7f859c9a3c9/"/>
+    <url>/purewhite/post/b7f859c9a3c9/</url>
+    
+    <content type="html"><![CDATA[<blockquote><p>使用<a href="%5Bhttps://github.com/wangqr/Aegisub%5D(https://github.com/wangqr/Aegisub)">wangqr</a>3.3.3版本。常见<a href="%5Bhttps://github.com/Aegisub/Aegisub%5D(https://github.com/Aegisub/Aegisub)">官方</a>版本已于2019年停止发布。</p></blockquote><h1 id="认识Aegisub"><a href="#认识Aegisub" class="headerlink" title="认识Aegisub"></a>认识Aegisub</h1><p><a href="https://www.bilibili.com/video/BV19F411w7m5/"><a href="https://www.bilibili.com/video/BV19F411w7m5/">https://www.bilibili.com/video/BV19F411w7m5/</a></a></p><h2 id="界面"><a href="#界面" class="headerlink" title="界面"></a>界面</h2><p>左上视频区预览和定位，右上音频区打轴，右侧文本区定制字幕，下方总览区。建议勾选音频区的自动提交和视频区的自动移动视频。</p><h2 id="打轴"><a href="#打轴" class="headerlink" title="打轴"></a>打轴</h2><p>根据声音确定每一句的位置，鼠标左键标记开始，右键标记结束，提交保存。</p><h2 id="快捷键"><a href="#快捷键" class="headerlink" title="快捷键"></a>快捷键</h2><p>A往前、F往后，E播放选区内前500ms、D播放选区内后500ms，Q播放选区外前端相邻500ms、W播放选区外后端相邻500ms，←前一帧、→后一帧。</p><p>Ctrl1跳到选区开始帧、Ctrl2跳到选区结束帧，Ctrl3设置当前帧为开始帧、Ctrl4设置当前帧为结束帧。</p><h1 id="基础操作"><a href="#基础操作" class="headerlink" title="基础操作"></a>基础操作</h1><p><a href="https://www.bilibili.com/video/BV1eP4y1o7gD/"><a href="https://www.bilibili.com/video/BV1eP4y1o7gD/">https://www.bilibili.com/video/BV1eP4y1o7gD/</a></a></p><h2 id="位置"><a href="#位置" class="headerlink" title="位置"></a>位置</h2><p>定位锚点在字幕中心，双击视频区任意位置可以移动，或者添加{\pos(x,y)}标签。</p><h2 id="样式"><a href="#样式" class="headerlink" title="样式"></a>样式</h2><p>单个字幕样式细节调整可以在音频区下方添加标签使用，1是开始0是结束。</p><p>统一更换样式可以在菜单“字幕”→“样式管理器”中在“当前脚本”新建，一般不需要阴影。</p><h2 id="工具"><a href="#工具" class="headerlink" title="工具"></a>工具</h2><p>左侧可选工具：拖放、旋转（常用只有Z轴）、缩放、遮罩（常用，标签是clip{}和iclip{}）</p><h2 id="对帧"><a href="#对帧" class="headerlink" title="对帧"></a>对帧</h2><p>除了左右方向键，鼠标在进度条上滑动也可以单帧移动。按住中键可以只移动播放轴。对帧可以用于屏字，如新人介绍。</p><h1 id="认识标签"><a href="#认识标签" class="headerlink" title="认识标签"></a>认识标签</h1><h2 id="颜色"><a href="#颜色" class="headerlink" title="颜色"></a>颜色</h2><table><thead><tr><th>标签</th><th>补充</th><th>含义</th></tr></thead><tbody><tr><td>\bord+num</td><td>可小数，负为0</td><td>边框厚度</td></tr><tr><td>\shad+num</td><td>正正负反</td><td>阴影位置</td></tr><tr><td>\1c+&amp;Hxxxxxx</td><td>主要颜色</td><td></td></tr><tr><td>\2c+&amp;Hxxxxxx</td><td>次要颜色</td><td></td></tr><tr><td>\3c+&amp;Hxxxxxx</td><td>边框颜色</td><td></td></tr><tr><td>\4c+&amp;Hxxxxxx</td><td>阴影颜色</td><td></td></tr></tbody></table><h2 id="位置-1"><a href="#位置-1" class="headerlink" title="位置"></a>位置</h2><p>锚点：\an+num标签，后跟数字1~9表示对齐方式参照小键盘。</p><p>定位：\pos+(x,y)标签，坐标是锚点的位置</p><p>旋转：标签\frx|y|z，可以为整数、小数、负数。旋转中心标签\org(x,y)，不设置则为锚点。</p><h2 id="间距与缩放"><a href="#间距与缩放" class="headerlink" title="间距与缩放"></a>间距与缩放</h2><table><thead><tr><th>标签</th><th>补充</th><th>含义</th></tr></thead><tbody><tr><td>\fsp</td><td>0和正数</td><td>字体间距大小</td></tr><tr><td>\fscx</td><td>y</td><td>负数默认0</td></tr></tbody></table><h2 id="大小与透明度"><a href="#大小与透明度" class="headerlink" title="大小与透明度"></a>大小与透明度</h2><table><thead><tr><th>含义</th><th>标签</th><th>补充</th></tr></thead><tbody><tr><td>字体大小</td><td>\fs</td><td>正数、小数、0</td></tr><tr><td>整体透明度</td><td>\alpha+&amp;Hex</td><td></td></tr><tr><td>主要颜色透明度</td><td>\1a</td><td></td></tr><tr><td>次要颜色透明度</td><td>\2a</td><td></td></tr><tr><td>边框透明度</td><td>\3a</td><td></td></tr><tr><td>阴影透明度</td><td>\4a</td><td></td></tr></tbody></table>]]></content>
+    
+    
+    <categories>
+      
+      <category>college</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>哔哩哔哩</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>复习《C语言大学教程》</title>
+    <link href="/purewhite/post/4a153ea74a29/"/>
+    <url>/purewhite/post/4a153ea74a29/</url>
+    
+    <content type="html"><![CDATA[]]></content>
+    
+    
+    <categories>
+      
+      <category>college</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>C/C++</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  
+</search>
